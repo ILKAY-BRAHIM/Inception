@@ -1,0 +1,88 @@
+version: "3.8"
+services: 
+
+  db:
+    # image: mariadb:10
+    build: ./mariadb
+    container_name: wp-60sec-db
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: wp_db
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: "1234"
+    volumes:
+      - data_mariadb:/var/lib/mysql
+    networks:
+      - my_net
+  
+  wordpress-fpm:
+    # image: wordpress:php8.2-fpm-alpine
+    build: ./wordpress
+    container_name: wp-60sec-fpm
+    depends_on:
+      - db
+    networks:
+      - my_net
+    volumes:
+      - data_word:/var/www/html
+      # - wp_files:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: "1234"
+      WORDPRESS_DB_NAME: wp_db
+  
+  nginx:
+    # image: nginx:alpine
+    build: ./conf.d
+    container_name: wp-60sec-nginx
+    depends_on: 
+      - wordpress-fpm
+      - redis
+      - adminer
+    ports:
+      - 8085:80
+    volumes:
+      - data_word:/var/www/html
+      # - ./conf.d:/etc/nginx/conf.d
+      # - wp_files:/var/www/html
+    networks:
+      - my_net
+  redis:
+    build: ./bonus/redis
+    container_name: redis
+    volumes:
+      - data_word:/var/www/html
+    networks:
+      - my_net
+    restart: always
+  adminer:
+    depends_on:
+      - wordpress-fpm
+    build: ./bonus/adminer
+    container_name: adminer
+    volumes:
+      - data_word:/var/www/html
+    networks:
+      - my_net
+    restart: always
+
+networks:
+  my_net:
+    driver: bridge
+# volumes: 
+#   wp_files: 
+
+volumes:
+  data_word:
+    driver_opts:
+      o: bind 
+      type : none
+      device: /home/bchifour/Desktop/inc/data/wordpress
+  data_mariadb:
+    driver_opts:
+      o: bind 
+      type : none
+      device: /home/bchifour/Desktop/inc/data/mariadb
+
+
