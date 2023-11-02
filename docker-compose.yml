@@ -40,6 +40,8 @@ services:
       - wordpress-fpm
       - redis
       - adminer
+      - portfolio
+      - cadvisor
     ports:
       - 8085:80
     volumes:
@@ -66,6 +68,41 @@ services:
     networks:
       - my_net
     restart: always
+  ftp:
+    build: ./bonus/ftp
+    container_name: ftp
+    # ports:
+    #   - 21:21
+    networks:
+      - my_net
+    restart: always
+    volumes:
+      - data_word:/var/www/html
+  portfolio:
+    build: ./bonus/portfolio
+    container_name: portfolio
+    ports:
+      - 3000:3000
+    networks:
+      - my_net
+    volumes:
+      - data_word:/var/www/html
+    restart: always
+  cadvisor:
+    container_name: cadvisor
+    build: ./bonus/cadvisor
+    image: cadvisor
+    ports:
+      - "8080:8080"
+    networks:
+      - my_net
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro 
+      - /sys:/sys:ro 
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: always
+
 
 networks:
   my_net:
