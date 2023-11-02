@@ -2,7 +2,6 @@ version: "3.8"
 services: 
 
   db:
-    # image: mariadb:10
     build: ./mariadb
     container_name: wp-60sec-db
     environment:
@@ -16,7 +15,6 @@ services:
       - my_net
   
   wordpress-fpm:
-    # image: wordpress:php8.2-fpm-alpine
     build: ./wordpress
     container_name: wp-60sec-fpm
     depends_on:
@@ -25,7 +23,6 @@ services:
       - my_net
     volumes:
       - data_word:/var/www/html
-      # - wp_files:/var/www/html
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wp_user
@@ -33,7 +30,6 @@ services:
       WORDPRESS_DB_NAME: wp_db
   
   nginx:
-    # image: nginx:alpine
     build: ./conf.d
     container_name: wp-60sec-nginx
     depends_on: 
@@ -46,8 +42,6 @@ services:
       - 8085:80
     volumes:
       - data_word:/var/www/html
-      # - ./conf.d:/etc/nginx/conf.d
-      # - wp_files:/var/www/html
     networks:
       - my_net
   redis:
@@ -107,8 +101,6 @@ services:
 networks:
   my_net:
     driver: bridge
-# volumes: 
-#   wp_files: 
 
 volumes:
   data_word:
