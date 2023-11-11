@@ -1,51 +1,55 @@
 version: "3.8"
 services: 
 
-  db:
-    build: ./mariadb
-    container_name: wp-60sec-db
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: "1234"
-      MYSQL_DATABASE: wp_db
-      MYSQL_USER: wp_user
-      MYSQL_PASSWORD: "1234"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - data_mariadb:/var/lib/mysql
     networks:
       - my_net
   
-  wordpress-fpm:
-    build: ./wordpress
-    container_name: wp-60sec-fpm
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
     depends_on:
-      - db
+      - mariadb
     networks:
       - my_net
     volumes:
       - data_word:/var/www/html
     environment:
-      WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_USER: wp_user
-      WORDPRESS_DB_PASSWORD: "1234"
-      WORDPRESS_DB_NAME: wp_db
-  
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WP_URL: ${WP_URL}
+      WP_TITLE: ${WP_TITLE}
+      WP_ADMIN: ${WP_ADMIN}
+      WP_ADMIN_PASSWD: ${WP_ADMIN_PASSWD}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
   nginx:
-    build: ./conf.d
-    container_name: wp-60sec-nginx
+    build: ./requirements/nginx
+    container_name: nginx
     depends_on: 
-      - wordpress-fpm
+      - wordpress
       - redis
       - adminer
       - portfolio
       - cadvisor
     ports:
-      - 8085:80
+      - 443:443
     volumes:
       - data_word:/var/www/html
     networks:
       - my_net
   redis:
-    build: ./bonus/redis
+    build: ./requirements/bonus/redis
     container_name: redis
     volumes:
       - data_word:/var/www/html
@@ -54,8 +58,8 @@ services:
     restart: always
   adminer:
     depends_on:
-      - wordpress-fpm
-    build: ./bonus/adminer
+      - wordpress
+    build: ./requirements/bonus/adminer
     container_name: adminer
     volumes:
       - data_word:/var/www/html
@@ -63,20 +67,19 @@ services:
       - my_net
     restart: always
   ftp:
-    build: ./bonus/ftp
+    build: ./requirements/bonus/ftp
     container_name: ftp
-    # ports:
-    #   - 21:21
+    environment:
+      FTP_USER: ${FTP_USER}
+      FTP_PASSWORD: ${FTP_PASSWORD}
     networks:
       - my_net
     restart: always
     volumes:
       - data_word:/var/www/html
   portfolio:
-    build: ./bonus/portfolio
+    build: ./requirements/bonus/portfolio
     container_name: portfolio
-    ports:
-      - 3000:3000
     networks:
       - my_net
     volumes:
@@ -84,16 +87,14 @@ services:
     restart: always
   cadvisor:
     container_name: cadvisor
-    build: ./bonus/cadvisor
+    build: ./requirements/bonus/cadvisor
     image: cadvisor
-    ports:
-      - "8080:8080"
     networks:
       - my_net
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro 
-      - /sys:/sys:ro 
+      - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     restart: always
 
@@ -107,11 +108,9 @@ volumes:
     driver_opts:
       o: bind 
       type : none
-      device: /home/bchifour/Desktop/inc/data/wordpress
+      device: /home/bchifour/data/wordpress
   data_mariadb:
     driver_opts:
       o: bind 
       type : none
-      device: /home/bchifour/Desktop/inc/data/mariadb
-
-
+      device: /home/bchifour/data/mariadb
