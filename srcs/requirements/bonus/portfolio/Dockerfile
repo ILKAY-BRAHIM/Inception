@@ -4,5 +4,5 @@ EXPOSE      3000
 COPY        ./tools/set.sh set_portfolio.sh
 COPY        ./conf/app.js app.js
 
-ENTRYPOINT  [ "bash", "set_portfolio.sh" ]
+ENTRYPOINT  [ "/set_portfolio.sh" ]
 CMD         [ "node", "app.js" ]
