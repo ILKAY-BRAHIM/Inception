@@ -6,5 +6,5 @@ RUN         curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/b
 RUN         chmod +x /usr/local/bin/wp;
 COPY        ./tools/set.sh /set_wordpress.sh
 EXPOSE      9000
-ENTRYPOINT  ["bash" , "/set_wordpress.sh"]
+ENTRYPOINT  ["/set_wordpress.sh"]
 CMD         ["php-fpm8.2", "-F"]
